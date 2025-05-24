@@ -12,6 +12,7 @@
 
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
+        <thrift.version>0.21.0</thrift.version>
     </properties>
 
     <dependencyManagement>
@@ -46,7 +47,7 @@
         <dependency>
             <groupId>org.apache.thrift</groupId>
             <artifactId>libthrift</artifactId>
-            <version>0.21.0</version>
+            <version>${thrift.version}</version>
         </dependency>
 
         <dependency>
@@ -64,4 +65,36 @@
             <artifactId>spring-cloud-starter-alibaba-nacos-config</artifactId>
         </dependency>
     </dependencies>
+
+    <build>
+        <extensions>
+            <extension>
+                <groupId>kr.motd.maven</groupId>
+                <artifactId>os-maven-plugin</artifactId>
+                <version>1.7.1</version>
+            </extension>
+        </extensions>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.thrift</groupId>
+                <artifactId>thrift-maven-plugin</artifactId>
+                <version>0.10.0</version>
+                <configuration>
+                    <thriftExecutable>thrift</thriftExecutable>
+                    <thriftSourceRoot>${project.basedir}/src/main/thrift</thriftSourceRoot>
+                    <outputDirectory>${project.basedir}/src/main/java</outputDirectory>
+                    <generator>java</generator>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>thrift-sources</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>
