@@ -84,6 +84,8 @@
                     <thriftSourceRoot>${project.basedir}/src/main/thrift</thriftSourceRoot>
                     <outputDirectory>${project.basedir}/src/main/java</outputDirectory>
                     <generator>java</generator>
+                    <!-- Skip thrift compilation if the compiler is not available -->
+                    <skip>true</skip>
                 </configuration>
                 <executions>
                     <execution>
@@ -94,6 +96,12 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            
+            <!-- Add Spring Boot Maven plugin -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
         </plugins>
     </build>
