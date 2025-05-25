@@ -86,11 +86,11 @@ class DtpMonitorTest {
         
         try (MockedStatic<ThreadPoolCreator> mockedThreadPoolCreator = Mockito.mockStatic(ThreadPoolCreator.class)) {
             ScheduledFuture<?> mockFuture = mock(ScheduledFuture.class);
-            DtpExecutor mockExecutor = mock(DtpExecutor.class);
+            ScheduledExecutorService mockExecutor = mock(ScheduledExecutorService.class);
             when(mockExecutor.scheduleWithFixedDelay(any(Runnable.class), anyLong(), anyLong(), any(TimeUnit.class)))
                     .thenReturn(mockFuture);
             
-            mockedThreadPoolCreator.when(() -> ThreadPoolCreator.newScheduledThreadPool(any(), anyLong()))
+            mockedThreadPoolCreator.when(() -> ThreadPoolCreator.newScheduledThreadPool(any(), anyInt()))
                     .thenReturn(mockExecutor);
             
             dtpMonitor.onContextRefreshedEvent(event);
@@ -117,10 +117,7 @@ class DtpMonitorTest {
             
             mockedAlarmManager.when(() -> AlarmManager.checkAndTryAlarmAsync(any(), any())).thenReturn(null);
             
-            ArgumentCaptor<CollectEvent> collectEventCaptor = ArgumentCaptor.forClass(CollectEvent.class);
-            ArgumentCaptor<AlarmCheckEvent> alarmEventCaptor = ArgumentCaptor.forClass(AlarmCheckEvent.class);
-            doNothing().when(mockedEventBusManager).post(collectEventCaptor.capture());
-            doNothing().when(mockedEventBusManager).post(alarmEventCaptor.capture());
+            mockedEventBusManager.when(() -> EventBusManager.post(any())).thenAnswer(invocation -> null);
             
             java.lang.reflect.Method runMethod = DtpMonitor.class.getDeclaredMethod("run");
             runMethod.setAccessible(true);
@@ -130,7 +127,7 @@ class DtpMonitorTest {
             mockedRegistry.verify(() -> DtpRegistry.getExecutorWrapper("testExecutor"));
             mockedAlarmManager.verify(() -> AlarmManager.checkAndTryAlarmAsync(eq(mockWrapper), any()));
             
-            verify(mockedEventBusManager, times(2)).post(any());
+            mockedEventBusManager.verify(() -> EventBusManager.post(any()), times(2));
         } catch (Exception e) {
             throw new RuntimeException("Test failed", e);
         }
@@ -139,8 +136,8 @@ class DtpMonitorTest {
     @Test
     void testDestroy() {
         try (MockedStatic<ThreadPoolCreator> mockedThreadPoolCreator = Mockito.mockStatic(ThreadPoolCreator.class)) {
-            DtpExecutor mockExecutor = mock(DtpExecutor.class);
-            mockedThreadPoolCreator.when(() -> ThreadPoolCreator.newScheduledThreadPool(any(), anyLong()))
+            ScheduledExecutorService mockExecutor = mock(ScheduledExecutorService.class);
+            mockedThreadPoolCreator.when(() -> ThreadPoolCreator.newScheduledThreadPool(any(), anyInt()))
                     .thenReturn(mockExecutor);
             
             CustomContextRefreshedEvent event = new CustomContextRefreshedEvent("test");
