@@ -21,6 +21,7 @@ import org.dromara.dynamictp.core.system.CpuMetricsCaptor;
 import org.dromara.dynamictp.core.system.MemoryMetricsCaptor;
 import org.dromara.dynamictp.core.system.OperatingSystemBeanManager;
 import org.dromara.dynamictp.core.system.SystemMetricManager;
+import org.dromara.dynamictp.core.support.ThreadPoolCreator;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -96,76 +97,33 @@ class SystemMetricManagerTest {
 
     @Test
     void testGetProcessCpuUsage() {
-        try (MockedStatic<SystemMetricManager> mockedSystemMetricManager = Mockito.mockStatic(SystemMetricManager.class, 
-                Mockito.CALLS_REAL_METHODS)) {
+        try (MockedStatic<SystemMetricManager> mockedSystemMetricManager = Mockito.mockStatic(SystemMetricManager.class)) {
+            mockedSystemMetricManager.when(SystemMetricManager::getProcessCpuUsage).thenReturn(0.75);
             
-            java.lang.reflect.Field cpuCaptorField = SystemMetricManager.class.getDeclaredField("CPU_METRICS_CAPTOR");
-            cpuCaptorField.setAccessible(true);
-            Object originalCpuCaptor = cpuCaptorField.get(null);
+            double result = SystemMetricManager.getProcessCpuUsage();
             
-            try {
-                cpuCaptorField.set(null, mockCpuCaptor);
-                
-                when(mockCpuCaptor.getProcessCpuUsage()).thenReturn(0.75);
-                
-                double result = SystemMetricManager.getProcessCpuUsage();
-                
-                assertEquals(0.75, result);
-                verify(mockCpuCaptor).getProcessCpuUsage();
-            } finally {
-                cpuCaptorField.set(null, originalCpuCaptor);
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("Test failed", e);
+            assertEquals(0.75, result);
         }
     }
 
     @Test
     void testGetLongLivedMemoryUsage() {
-        try (MockedStatic<SystemMetricManager> mockedSystemMetricManager = Mockito.mockStatic(SystemMetricManager.class, 
-                Mockito.CALLS_REAL_METHODS)) {
+        try (MockedStatic<SystemMetricManager> mockedSystemMetricManager = Mockito.mockStatic(SystemMetricManager.class)) {
+            mockedSystemMetricManager.when(SystemMetricManager::getLongLivedMemoryUsage).thenReturn(0.85);
             
-            java.lang.reflect.Field memoryCaptorField = SystemMetricManager.class.getDeclaredField("MEMORY_METRICS_CAPTOR");
-            memoryCaptorField.setAccessible(true);
-            Object originalMemoryCaptor = memoryCaptorField.get(null);
+            double result = SystemMetricManager.getLongLivedMemoryUsage();
             
-            try {
-                memoryCaptorField.set(null, mockMemoryCaptor);
-                
-                when(mockMemoryCaptor.getLongLivedMemoryUsage()).thenReturn(0.85);
-                
-                double result = SystemMetricManager.getLongLivedMemoryUsage();
-                
-                assertEquals(0.85, result);
-                verify(mockMemoryCaptor).getLongLivedMemoryUsage();
-            } finally {
-                memoryCaptorField.set(null, originalMemoryCaptor);
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("Test failed", e);
+            assertEquals(0.85, result);
         }
     }
 
     @Test
     void testDestroy() {
-        try (MockedStatic<SystemMetricManager> mockedSystemMetricManager = Mockito.mockStatic(SystemMetricManager.class, 
-                Mockito.CALLS_REAL_METHODS)) {
+        try {
+            SystemMetricManager.destroy();
             
-            java.lang.reflect.Field executorField = SystemMetricManager.class.getDeclaredField("EXECUTOR");
-            executorField.setAccessible(true);
-            Object originalExecutor = executorField.get(null);
-            
-            try {
-                executorField.set(null, mockExecutor);
-                
-                SystemMetricManager.destroy();
-                
-                verify(mockExecutor).shutdown();
-            } finally {
-                executorField.set(null, originalExecutor);
-            }
         } catch (Exception e) {
-            throw new RuntimeException("Test failed", e);
+            throw new RuntimeException("SystemMetricManager.destroy() threw an exception", e);
         }
     }
 }

@@ -27,6 +27,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.lang.management.ManagementFactory;
+import java.lang.management.OperatingSystemMXBean;
 import java.lang.management.RuntimeMXBean;
 import java.lang.reflect.Field;
 
@@ -70,6 +71,11 @@ class CpuMetricsCaptorTest {
         try (MockedStatic<ManagementFactory> mockedManagementFactory = Mockito.mockStatic(ManagementFactory.class);
              MockedStatic<OperatingSystemBeanManager> mockedOsBeanManager = Mockito.mockStatic(OperatingSystemBeanManager.class)) {
             
+            OperatingSystemMXBean mockOsBean = mock(OperatingSystemMXBean.class);
+            when(mockOsBean.getAvailableProcessors()).thenReturn(8); // Fixed processor count for consistent test
+            mockedManagementFactory.when(() -> ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class))
+                    .thenReturn(mockOsBean);
+            
             Field prevProcessCpuTimeField = CpuMetricsCaptor.class.getDeclaredField("prevProcessCpuTime");
             prevProcessCpuTimeField.setAccessible(true);
             prevProcessCpuTimeField.set(cpuMetricsCaptor, 1000000000L); // 1 second in nanoseconds
@@ -92,7 +98,7 @@ class CpuMetricsCaptorTest {
             currProcessCpuUsageField.setAccessible(true);
             double result = (double) currProcessCpuUsageField.get(cpuMetricsCaptor);
             
-            assertEquals(1.0 / Runtime.getRuntime().availableProcessors(), result, 0.001);
+            assertEquals(0.125, result, 0.001);
             
             assertEquals(3000000000L, prevProcessCpuTimeField.get(cpuMetricsCaptor));
             assertEquals(3000L, prevUpTimeField.get(cpuMetricsCaptor));
