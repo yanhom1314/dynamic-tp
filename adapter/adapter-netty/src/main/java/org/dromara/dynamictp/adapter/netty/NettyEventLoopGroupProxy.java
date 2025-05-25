@@ -25,6 +25,7 @@ import org.dromara.dynamictp.core.aware.TaskEnhanceAware;
 import org.dromara.dynamictp.core.support.task.wrapper.TaskWrapper;
 
 import java.util.List;
+import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -34,7 +35,7 @@ import java.util.concurrent.TimeUnit;
  * @since 1.2.2
  */
 @Slf4j
-public class NettyEventLoopGroupProxy implements TaskEnhanceAware, RejectHandlerAware {
+public class NettyEventLoopGroupProxy implements TaskEnhanceAware, RejectHandlerAware, Executor {
 
     /**
      * Original NioEventLoopGroup instance
@@ -94,6 +95,11 @@ public class NettyEventLoopGroupProxy implements TaskEnhanceAware, RejectHandler
     @Override
     public void setRejectHandlerType(String rejectHandlerType) {
         this.rejectHandlerType = rejectHandlerType;
+    }
+
+    @Override
+    public void execute(Runnable command) {
+        original.execute(getEnhancedTask(command));
     }
 
     public Runnable getEnhancedTask(Runnable command) {
