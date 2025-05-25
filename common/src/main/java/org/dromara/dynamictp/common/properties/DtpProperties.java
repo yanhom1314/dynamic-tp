@@ -182,6 +182,14 @@ public class DtpProperties {
      */
     private List<TpExecutorProps> nettyTp;
     
+    public List<TpExecutorProps> getNettyTp() {
+        return nettyTp;
+    }
+    
+    public void setNettyTp(List<TpExecutorProps> nettyTp) {
+        this.nettyTp = nettyTp;
+    }
+    
     public static DtpProperties getInstance() {
         return Holder.INSTANCE;
     }
