@@ -17,6 +17,7 @@
 
 package org.dromara.dynamictp.test.core.monitor;
 
+import java.util.concurrent.ScheduledExecutorService;
 import org.dromara.dynamictp.common.event.CollectEvent;
 import org.dromara.dynamictp.common.event.AlarmCheckEvent;
 import org.dromara.dynamictp.common.event.CustomContextRefreshedEvent;
@@ -47,6 +48,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
@@ -85,12 +88,17 @@ class DtpMonitorTest {
         CustomContextRefreshedEvent event = new CustomContextRefreshedEvent("test");
         
         try (MockedStatic<ThreadPoolCreator> mockedThreadPoolCreator = Mockito.mockStatic(ThreadPoolCreator.class)) {
-            ScheduledFuture<?> mockFuture = mock(ScheduledFuture.class);
             ScheduledExecutorService mockExecutor = mock(ScheduledExecutorService.class);
-            when(mockExecutor.scheduleWithFixedDelay(any(Runnable.class), anyLong(), anyLong(), any(TimeUnit.class)))
-                    .thenReturn(mockFuture);
             
-            mockedThreadPoolCreator.when(() -> ThreadPoolCreator.newScheduledThreadPool(any(), anyInt()))
+            @SuppressWarnings("rawtypes")
+            ScheduledFuture mockFuture = mock(ScheduledFuture.class);
+            
+            @SuppressWarnings("unchecked")
+            ScheduledFuture<?> result = mockExecutor.scheduleWithFixedDelay(
+                any(Runnable.class), anyLong(), anyLong(), any(TimeUnit.class));
+            Mockito.when(result).thenReturn(mockFuture);
+            
+            mockedThreadPoolCreator.when(() -> ThreadPoolCreator.newScheduledThreadPool(anyString(), anyInt()))
                     .thenReturn(mockExecutor);
             
             dtpMonitor.onContextRefreshedEvent(event);
@@ -137,7 +145,7 @@ class DtpMonitorTest {
     void testDestroy() {
         try (MockedStatic<ThreadPoolCreator> mockedThreadPoolCreator = Mockito.mockStatic(ThreadPoolCreator.class)) {
             ScheduledExecutorService mockExecutor = mock(ScheduledExecutorService.class);
-            mockedThreadPoolCreator.when(() -> ThreadPoolCreator.newScheduledThreadPool(any(), anyInt()))
+            mockedThreadPoolCreator.when(() -> ThreadPoolCreator.newScheduledThreadPool(anyString(), anyInt()))
                     .thenReturn(mockExecutor);
             
             CustomContextRefreshedEvent event = new CustomContextRefreshedEvent("test");

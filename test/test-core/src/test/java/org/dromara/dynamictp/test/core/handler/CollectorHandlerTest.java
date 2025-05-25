@@ -84,7 +84,7 @@ class CollectorHandlerTest {
             mockedLoader.when(() -> ExtensionServiceLoader.get(MetricsCollector.class))
                     .thenReturn(collectors);
             
-            collectorHandler = new CollectorHandler();
+            collectorHandler = CollectorHandler.getInstance();
             
             Field collectorsField = CollectorHandler.class.getDeclaredField("COLLECTORS");
             collectorsField.setAccessible(true);
@@ -107,7 +107,7 @@ class CollectorHandlerTest {
             mockedLoader.when(() -> ExtensionServiceLoader.get(MetricsCollector.class))
                     .thenReturn(collectors);
             
-            collectorHandler = new CollectorHandler();
+            collectorHandler = CollectorHandler.getInstance();
             
             Field collectorsField = CollectorHandler.class.getDeclaredField("COLLECTORS");
             collectorsField.setAccessible(true);
@@ -130,7 +130,7 @@ class CollectorHandlerTest {
             mockedLoader.when(() -> ExtensionServiceLoader.get(MetricsCollector.class))
                     .thenReturn(collectors);
             
-            collectorHandler = new CollectorHandler();
+            collectorHandler = CollectorHandler.getInstance();
             
             Field collectorsField = CollectorHandler.class.getDeclaredField("COLLECTORS");
             collectorsField.setAccessible(true);
@@ -156,7 +156,7 @@ class CollectorHandlerTest {
             mockedLoader.when(() -> ExtensionServiceLoader.get(MetricsCollector.class))
                     .thenReturn(collectors);
             
-            collectorHandler = new CollectorHandler();
+            collectorHandler = CollectorHandler.getInstance();
             
             Field collectorsField = CollectorHandler.class.getDeclaredField("COLLECTORS");
             collectorsField.setAccessible(true);
