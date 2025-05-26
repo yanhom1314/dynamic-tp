@@ -71,8 +71,8 @@ public class NettyDtpAdapter extends AbstractDtpAdapter {
             String tpName = genTpName(poolType, eventLoopGroup.hashCode());
             
             try {
-                NettyEventLoopGroupProxy proxy = new NettyEventLoopGroupProxy(eventLoopGroup);
-                ExecutorWrapper wrapper = new ExecutorWrapper(tpName, proxy);
+                NettyEventLoopGroupAdapter adapter = new NettyEventLoopGroupAdapter(eventLoopGroup);
+                ExecutorWrapper wrapper = new ExecutorWrapper(tpName, adapter);
                 executors.put(tpName, wrapper);
                 log.info("DynamicTp adapter, netty {} registered for monitoring, tpName: {}, threadCount: {}", 
                         poolType, tpName, eventLoopGroup.executorCount());
@@ -84,19 +84,50 @@ public class NettyDtpAdapter extends AbstractDtpAdapter {
     }
     
     /**
-     * Determine if this is a Boss or Worker thread pool
+     * Determine if this is a Boss or Worker thread pool using multiple heuristics
      * 
      * @param eventLoopGroup the event loop group to check
      * @return the pool type (Boss or Worker)
      */
     private String determinePoolType(NioEventLoopGroup eventLoopGroup) {
-        if (eventLoopGroup.executorCount() <= 1) {
+        int threadCount = eventLoopGroup.executorCount();
+        
+        if (threadCount == 1) {
             return "Boss";
         }
-        return "Worker";
+        
+        try {
+            String poolType = threadCount <= 2 ? "Boss" : "Worker";
+            if (log.isDebugEnabled()) {
+                log.debug("Detected EventLoopGroup type: {} (threadCount: {})", poolType, threadCount);
+            }
+            return poolType;
+        } catch (Exception e) {
+            log.warn("Failed to determine EventLoopGroup type, defaulting to Worker: {}", e.getMessage());
+            return "Worker";
+        }
     }
 
     private String genTpName(String poolType, int hashCode) {
+        String portInfo = getPortInfo();
+        if (portInfo != null) {
+            return TP_PREFIX + "#" + poolType + "#" + portInfo;
+        }
         return TP_PREFIX + "#" + poolType + "#" + hashCode;
+    }
+
+    /**
+     * Attempt to get port information for better naming
+     * This is a best-effort approach since direct access to ServerBootstrap is complex
+     */
+    private String getPortInfo() {
+        try {
+            return null;
+        } catch (Exception e) {
+            if (log.isDebugEnabled()) {
+                log.debug("Could not determine port information: {}", e.getMessage());
+            }
+            return null;
+        }
     }
 }

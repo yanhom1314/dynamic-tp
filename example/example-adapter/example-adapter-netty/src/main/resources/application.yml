@@ -1,0 +1,28 @@
+server:
+  port: 8081
+
+spring:
+  dynamic:
+    tp:
+      enabled: true
+      enabledBanner: true
+      configType: yml
+      print: true
+      monitorInterval: 5
+      nettyTp:
+        - threadPoolName: "nettyTp#Boss#*"
+          corePoolSize: 1
+          maximumPoolSize: 1
+          allowCoreThreadTimeOut: false
+          keepAliveTime: 60
+          unit: seconds
+        - threadPoolName: "nettyTp#Worker#*"
+          corePoolSize: 4
+          maximumPoolSize: 8
+          allowCoreThreadTimeOut: false
+          keepAliveTime: 60
+          unit: seconds
+
+logging:
+  level:
+    org.dromara.dynamictp: debug
