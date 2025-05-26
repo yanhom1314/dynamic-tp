@@ -26,6 +26,7 @@
         <module>starter-adapter-rabbitmq</module>
         <module>starter-adapter-liteflow</module>
         <module>starter-adapter-thrift</module>
+        <module>starter-adapter-netty</module>
     </modules>
 
     <dependencies>

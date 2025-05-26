@@ -27,6 +27,7 @@
         <module>example-adapter-liteflow</module>
         <module>example-adapter-webserver</module>
         <module>example-adapter-thrift</module>
+        <module>example-adapter-netty</module>
     </modules>
 
     <dependencies>
