@@ -80,7 +80,13 @@ public abstract class AbstractRefresher implements Refresher {
         
         DtpProperties existingConfig = ConfigMergeHelper.deepCopy(dtpProperties);
         
-        DtpProperties newConfig = new DtpProperties();
+        DtpProperties newConfig;
+        try {
+            newConfig = DtpProperties.class.getDeclaredConstructor().newInstance();
+        } catch (Exception e) {
+            log.error("Failed to create DtpProperties instance for configuration binding", e);
+            throw new RuntimeException("Cannot create DtpProperties instance", e);
+        }
         BinderHelper.bindDtpProperties(properties, newConfig);
         
         ConfigMergeHelper.mergeConfigurations(existingConfig, newConfig);

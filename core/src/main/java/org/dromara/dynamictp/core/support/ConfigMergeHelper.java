@@ -39,7 +39,7 @@ import java.util.Objects;
 @Slf4j
 public final class ConfigMergeHelper {
 
-    private ConfigMergeHelper() {}
+    private ConfigMergeHelper() { }
 
     /**
      * Create a deep copy of DtpProperties to preserve existing configuration
@@ -48,7 +48,13 @@ public final class ConfigMergeHelper {
      * @return deep copy of DtpProperties
      */
     public static DtpProperties deepCopy(DtpProperties source) {
-        DtpProperties copy = new DtpProperties();
+        DtpProperties copy;
+        try {
+            copy = DtpProperties.class.getDeclaredConstructor().newInstance();
+        } catch (Exception e) {
+            log.error("Failed to create DtpProperties instance for deep copy", e);
+            throw new RuntimeException("Cannot create DtpProperties instance", e);
+        }
         
         copy.setEnabled(source.isEnabled());
         copy.setEnv(source.getEnv());
@@ -79,7 +85,6 @@ public final class ConfigMergeHelper {
         copy.setSofaTp(source.getSofaTp() != null ? new ArrayList<>(source.getSofaTp()) : null);
         copy.setRabbitmqTp(source.getRabbitmqTp() != null ? new ArrayList<>(source.getRabbitmqTp()) : null);
         copy.setLiteflowTp(source.getLiteflowTp() != null ? new ArrayList<>(source.getLiteflowTp()) : null);
-        copy.setThriftTp(source.getThriftTp() != null ? new ArrayList<>(source.getThriftTp()) : null);
         
         return copy;
     }
@@ -143,8 +148,7 @@ public final class ConfigMergeHelper {
                             field.set(existing, new ArrayList<>(newList));
                         }
                     }
-                }
-                else if (field.getType().equals(TpExecutorProps.class)) {
+                } else if (field.getType().equals(TpExecutorProps.class)) {
                     field.set(existing, newValue);
                 }
             } catch (Exception e) {
