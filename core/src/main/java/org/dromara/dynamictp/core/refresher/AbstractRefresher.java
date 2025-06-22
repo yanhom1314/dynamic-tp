@@ -25,9 +25,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.dromara.dynamictp.common.em.ConfigFileTypeEnum;
 import org.dromara.dynamictp.common.event.RefreshEvent;
 import org.dromara.dynamictp.common.properties.DtpProperties;
+
+import java.lang.reflect.Field;
 import org.dromara.dynamictp.core.DtpRegistry;
 import org.dromara.dynamictp.core.handler.ConfigHandler;
 import org.dromara.dynamictp.core.support.binder.BinderHelper;
+import org.dromara.dynamictp.core.support.ConfigMergeHelper;
 
 import java.io.IOException;
 import java.util.Map;
@@ -74,7 +77,16 @@ public abstract class AbstractRefresher implements Refresher {
             log.warn("DynamicTp refresh, empty properties.");
             return;
         }
-        BinderHelper.bindDtpProperties(properties, dtpProperties);
+        
+        DtpProperties existingConfig = ConfigMergeHelper.deepCopy(dtpProperties);
+        
+        DtpProperties newConfig = new DtpProperties();
+        BinderHelper.bindDtpProperties(properties, newConfig);
+        
+        ConfigMergeHelper.mergeConfigurations(existingConfig, newConfig);
+        
+        copyConfiguration(existingConfig, dtpProperties);
+        
         doRefresh(dtpProperties);
     }
 
@@ -96,6 +108,19 @@ public abstract class AbstractRefresher implements Refresher {
                 .filter(str -> str.startsWith(MAIN_PROPERTIES_PREFIX))
                 .collect(Collectors.toSet());
         return CollectionUtils.isNotEmpty(changedKeys);
+    }
+
+    private void copyConfiguration(DtpProperties source, DtpProperties target) {
+        Field[] fields = DtpProperties.class.getDeclaredFields();
+        for (Field field : fields) {
+            try {
+                field.setAccessible(true);
+                Object value = field.get(source);
+                field.set(target, value);
+            } catch (Exception e) {
+                log.warn("Failed to copy field: {}", field.getName(), e);
+            }
+        }
     }
 
     private void publishEvent(DtpProperties dtpProperties) {
