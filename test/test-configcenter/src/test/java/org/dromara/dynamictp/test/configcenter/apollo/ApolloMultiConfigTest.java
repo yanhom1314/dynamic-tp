@@ -48,60 +48,62 @@ class ApolloMultiConfigTest extends DtpBaseTest {
         System.out.println("Initial corePoolSize: " + initialCoreSize);
         System.out.println("Initial maximumPoolSize: " + initialMaxSize);
         
-        mockCommonConfigChange();
-        Thread.sleep(2000L);
+        mockFirstConfigChange();
+        Thread.sleep(6000L);
         
         int updatedCoreSize = executor1.getCorePoolSize();
         int preservedMaxSize = executor1.getMaximumPoolSize();
         
-        System.out.println("After common config change - corePoolSize: " + updatedCoreSize);
-        System.out.println("After common config change - maximumPoolSize: " + preservedMaxSize);
+        System.out.println("After first config change - corePoolSize: " + updatedCoreSize);
+        System.out.println("After first config change - maximumPoolSize: " + preservedMaxSize);
         
-        Assertions.assertNotEquals(initialCoreSize, updatedCoreSize, "CorePoolSize should be updated by common config");
+        Assertions.assertNotEquals(initialCoreSize, updatedCoreSize, "CorePoolSize should be updated by first config change");
         
-        mockProjectConfigChange();
-        Thread.sleep(2000L);
+        mockSecondConfigChange();
+        Thread.sleep(6000L);
         
         int finalCoreSize = executor1.getCorePoolSize();
         int updatedMaxSize = executor1.getMaximumPoolSize();
         
-        System.out.println("After project config change - corePoolSize: " + finalCoreSize);
-        System.out.println("After project config change - maximumPoolSize: " + updatedMaxSize);
+        System.out.println("After second config change - corePoolSize: " + finalCoreSize);
+        System.out.println("After second config change - maximumPoolSize: " + updatedMaxSize);
         
-        Assertions.assertEquals(updatedCoreSize, finalCoreSize, "CorePoolSize from common config should be preserved");
-        Assertions.assertNotEquals(initialMaxSize, updatedMaxSize, "MaximumPoolSize should be updated by project config");
+        Assertions.assertEquals(updatedCoreSize, finalCoreSize, "CorePoolSize from first config should be preserved");
+        Assertions.assertNotEquals(initialMaxSize, updatedMaxSize, "MaximumPoolSize should be updated by second config");
     }
 
-    private void mockCommonConfigChange() {
-        YamlConfigFile configFile = (YamlConfigFile) ConfigService.getConfigFile("common-config", ConfigFileFormat.YML);
+    private void mockFirstConfigChange() {
+        YamlConfigFile configFile = (YamlConfigFile) ConfigService.getConfigFile("dynamic-tp-demo-dtp-dev", ConfigFileFormat.YML);
         Properties newProperties = new Properties();
         String content =
                 "dynamictp:\n" +
                 "  enabled: true\n" +
                 "  executors:\n" +
                 "    - threadPoolName: dtpExecutor1\n" +
-                "      threadPoolAliasName: 通用线程池\n" +
+                "      threadPoolAliasName: 测试线程池\n" +
                 "      executorType: common\n" +
-                "      corePoolSize: 15\n" +
-                "      maximumPoolSize: 30\n";
+                "      corePoolSize: 10\n" +
+                "      maximumPoolSize: 8\n" +
+                "      queueCapacity: 2000\n";
         newProperties.setProperty(CONFIG_FILE_CONTENT_KEY, content);
-        configFile.onRepositoryChange("common-config.yml", newProperties);
+        configFile.onRepositoryChange("dynamic-tp-demo-dtp-dev.yml", newProperties);
     }
 
-    private void mockProjectConfigChange() {
-        YamlConfigFile configFile = (YamlConfigFile) ConfigService.getConfigFile("project-config", ConfigFileFormat.YML);
+    private void mockSecondConfigChange() {
+        YamlConfigFile configFile = (YamlConfigFile) ConfigService.getConfigFile("dynamic-tp-demo-dtp-dev", ConfigFileFormat.YML);
         Properties newProperties = new Properties();
         String content =
                 "dynamictp:\n" +
                 "  enabled: true\n" +
                 "  executors:\n" +
                 "    - threadPoolName: dtpExecutor1\n" +
-                "      threadPoolAliasName: 项目线程池\n" +
+                "      threadPoolAliasName: 测试线程池\n" +
                 "      executorType: common\n" +
-                "      corePoolSize: 15\n" +
-                "      maximumPoolSize: 50\n";
+                "      corePoolSize: 10\n" +
+                "      maximumPoolSize: 15\n" +
+                "      queueCapacity: 2000\n";
         newProperties.setProperty(CONFIG_FILE_CONTENT_KEY, content);
-        configFile.onRepositoryChange("project-config.yml", newProperties);
+        configFile.onRepositoryChange("dynamic-tp-demo-dtp-dev.yml", newProperties);
     }
 
     @Test
