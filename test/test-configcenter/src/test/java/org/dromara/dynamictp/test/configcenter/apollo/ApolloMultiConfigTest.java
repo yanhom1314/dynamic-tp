@@ -21,7 +21,6 @@ import com.ctrip.framework.apollo.ConfigService;
 import com.ctrip.framework.apollo.core.enums.ConfigFileFormat;
 import com.ctrip.framework.apollo.internals.YamlConfigFile;
 import org.dromara.dynamictp.common.properties.DtpProperties;
-
 import org.dromara.dynamictp.test.configcenter.DtpBaseTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -116,6 +115,11 @@ class ApolloMultiConfigTest extends DtpBaseTest {
                 .anyMatch(executor -> "dtpExecutor1".equals(executor.getThreadPoolName()));
         
         Assertions.assertTrue(hasExecutor1, "Should have dtpExecutor1 configured");
+        
+        Assertions.assertTrue(dtpProperties.getExecutors().stream()
+                .anyMatch(executor -> executor.getCorePoolSize() > 0), "Should have valid core pool size");
+        Assertions.assertTrue(dtpProperties.getExecutors().stream()
+                .anyMatch(executor -> executor.getMaximumPoolSize() > 0), "Should have valid maximum pool size");
         
         System.out.println("Configuration merging test - dtpExecutor1 found: " + hasExecutor1);
         System.out.println("Total executors configured: " + dtpProperties.getExecutors().size());
